@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Data Grid</title>
+    
+    <!-- AG Grid CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.1/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.1/styles/ag-theme-alpine.css">
+    
+    <!-- Add Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .title {
+            font-size: 28px;
+            color: #1a1a1a;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            position: relative;
+            align-items: center;
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box {
+            padding: 12px 20px;
+            padding-left: 44px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            width: 100%;
+            transition: all 0.2s ease;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(52,152,219,0.1);
+        }
+
+        .search-box::placeholder {
+            color: #999;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            pointer-events: none;
+        }
+
+        .date-picker-container {
+            position: relative;
+        }
+
+        .date-picker-button {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .date-picker-button:hover {
+            border-color: #3498db;
+            background: white;
+        }
+
+        .date-picker-button svg {
+            width: 20px;
+            height: 20px;
+            color: #666;
+        }
+
+        .date-picker-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 16px;
+            min-width: 300px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .date-picker-dropdown.active {
+            display: block;
+        }
+
+        .quick-dates {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .quick-date-btn {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .quick-date-btn:hover {
+            background: #e3f2fd;
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .quick-date-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+
+        .date-range-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .date-input {
+            flex: 1;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+        }
+
+        .date-separator {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .date-icon {
+            color: #666;
+            margin-right: 4px;
+        }
+
+        .flatpickr-calendar {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .flatpickr-day.selected {
+            background: #3498db;
+            border-color: #3498db;
+        }
+
+        .flatpickr-day:hover {
+            background: #e3f2fd;
+        }
+
+        .column-selector {
+            padding: 10px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        #myGrid {
+            height: 700px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .ag-theme-alpine {
+            --ag-header-background-color: #ffffff;
+            --ag-odd-row-background-color: #fafafa;
+            --ag-header-foreground-color: #1a1a1a;
+            --ag-font-size: 13px;
+            --ag-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --ag-header-height: 48px;
+            --ag-row-height: 48px;
+            --ag-cell-horizontal-border: 1px solid #f0f0f0;
+            --ag-borders: none;
+            --ag-border-color: #e0e0e0;
+        }
+
+        .ag-theme-alpine .ag-header {
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .ag-theme-alpine .ag-header-cell {
+            font-weight: 600;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .export-btn:active {
+            transform: translateY(0);
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .viz-container {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .viz-widget {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 300px;
+            transition: all 0.2s ease;
+        }
+
+        .viz-widget:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .viz-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin: 0;
+        }
+
+        .viz-period {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .viz-chart {
+            height: 120px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            min-width: 150px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .stat-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .sparkline-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+
+        .stat-card:hover .sparkline-container {
+            opacity: 0.8;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            transition: color 0.2s ease;
+        }
+
+        .stat-value.positive {
+            color: #27ae60;
+        }
+
+        .stat-value.negative {
+            color: #e74c3c;
+        }
+
+        .column-menu-toggle {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px 0 0 8px;
+            padding: 12px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .column-menu-toggle:hover {
+            background: #2980b9;
+        }
+
+        .column-menu {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .column-menu.active {
+            right: 0;
+        }
+
+        .column-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .column-menu-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .close-menu {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 20px;
+        }
+
+        .column-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .column-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .column-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .column-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .column-label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .column-menu-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .column-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 40px;
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            padding: 18px 18px 12px 18px;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+        .column-dropdown.active {
+            display: flex;
+        }
+        .column-dropdown-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .column-search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+        .select-all-btn {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #3498db;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .select-all-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+        .column-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .column-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .column-item:hover {
+            background: #f8f9fa;
+        }
+        .column-toggle {
+            width: 36px;
+            height: 20px;
+            position: relative;
+            display: inline-block;
+        }
+        .column-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #e0e0e0;
+            border-radius: 20px;
+            transition: .2s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: .2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .column-toggle input:checked + .slider {
+            background: #3498db;
+        }
+        .column-toggle input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        .column-label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+            flex: 1;
+        }
+        .customize-columns-btn {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: #fff;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            z-index: 2101;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .customize-columns-btn:hover, .customize-columns-btn:focus {
+            background: #3498db;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(52,152,219,0.15);
+            border-color: #3498db;
+        }
+        .customize-columns-btn svg {
+            display: block;
+            color: inherit;
+        }
+        .column-panel-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.08);
+            z-index: 2000;
+        }
+        .column-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.10);
+            z-index: 2100;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        .column-panel.open {
+            right: 0;
+        }
+        .column-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 24px 8px 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .column-panel-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #222;
+        }
+        .column-panel-hidden-count {
+            font-size: 13px;
+            color: #888;
+            margin-left: 12px;
+            flex: 1;
+        }
+        .column-panel-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #888;
+            cursor: pointer;
+            margin-left: 8px;
+            line-height: 1;
+        }
+        .column-panel-search-container {
+            padding: 16px 24px 0 24px;
+        }
+        .column-panel-search {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #f8f9fa;
+        }
+        .column-panel-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0 0 0;
+            margin: 0 0 0 0;
+        }
+        .column-panel-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            background: #fff;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .column-panel-done {
+            background: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .column-panel-done:hover {
+            background: #2176bd;
+        }
+        .column-panel-item {
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            height: 44px;
+            border-bottom: 1px solid #f6f6f6;
+            background: #fff;
+            cursor: grab;
+            transition: background 0.2s;
+        }
+        .column-panel-item.dragging {
+            background: #e3f2fd;
+        }
+        .column-panel-checkbox {
+            margin-right: 16px;
+            width: 18px;
+            height: 18px;
+            accent-color: #3498db;
+        }
+        .column-panel-drag {
+            margin-right: 16px;
+            font-size: 18px;
+            color: #bbb;
+            cursor: grab;
+            user-select: none;
+        }
+        .column-panel-label {
+            font-size: 15px;
+            color: #222;
+            flex: 1;
+            user-select: none;
+        }
+
+        /* AI Insights Button and Modal */
+        .ai-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .ai-button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .ai-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2200;
+        }
+
+        .ai-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+            z-index: 2300;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .ai-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .ai-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .ai-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .ai-list-item {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .ai-list-item:before {
+            content: "•";
+            position: absolute;
+            left: 8px;
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Transactions</h1>
+            <button class="export-btn" onclick="exportToCsv()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export to CSV
+            </button>
+        </div>
+
+        <div class="filters">
+            <div class="date-picker-container">
+                <button class="date-picker-button" id="dateRangeBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span id="dateRangeText" style="margin-left:8px; font-size:13px; color:#333;">Date Range</span>
+                </button>
+            </div>
+            <div class="search-box-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="globalSearch" class="search-box" placeholder="Search transactions...">
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-value" id="totalTransactions">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Amount</div>
+                <div class="stat-value" id="totalAmount">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Average Amount</div>
+                <div class="stat-value" id="averageAmount">$0.00</div>
+            </div>
+        </div>
+
+        <!-- AI Insights Button -->
+        <button class="ai-button" id="aiInsightsBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                <path d="M14 19a2 2 0 0 1-2 2a2 2 0 0 1-2-2"></path>
+                <path d="M12 17v4"></path>
+                <path d="M8 8v4a4 4 0 0 0 8 0V8"></path>
+                <path d="M10 8a2 2 0 1 1 4 0V5a2 2 0 1 1-4 0v3z"></path>
+            </svg>
+            Analyze with AI
+        </button>
+
+        <!-- AI Insights Modal -->
+        <div class="ai-modal-overlay" id="aiModalOverlay"></div>
+        <div class="ai-modal" id="aiModal">
+            <div class="ai-modal-header">
+                <h3 class="ai-modal-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; color: #3498db;">
+                        <path d="M14 19a2 2 0 0 1-2 2a2 2 0 0 1-2-2"></path>
+                        <path d="M12 17v4"></path>
+                        <path d="M8 8v4a4 4 0 0 0 8 0V8"></path>
+                        <path d="M10 8a2 2 0 1 1 4 0V5a2 2 0 1 1-4 0v3z"></path>
+                    </svg>
+                    AI Insights
+                </h3>
+                <button class="ai-modal-close" id="aiModalClose">&times;</button>
+            </div>
+            <ul class="ai-list">
+                <li class="ai-list-item">Transaction volume has increased by X% compared to the previous period.</li>
+                <li class="ai-list-item">Average transaction amount for completed transactions is Y.</li>
+                <li class="ai-list-item">The 'Food' category accounts for Z% of total spending.</li>
+            </ul>
+        </div>
+
+        <div class="viz-container">
+            <div class="viz-widget">
+                <div class="viz-header">
+                    <h3 class="viz-title">Transaction Volume</h3>
+                    <span class="viz-period">Last 30 days</span>
+                </div>
+                <div class="viz-chart">
+                    <canvas id="transactionsChart"></canvas>
+                </div>
+            </div>
+            <div class="viz-widget">
+                <div class="viz-header">
+                    <h3 class="viz-title">Transaction Amounts</h3>
+                    <span class="viz-period">Last 30 days</span>
+                </div>
+                <div class="viz-chart">
+                    <canvas id="amountsChart"></canvas>
+                </div>
+            </div>
+            <div class="viz-widget">
+                <div class="viz-header">
+                    <h3 class="viz-title">Average Transaction</h3>
+                    <span class="viz-period">Last 30 days</span>
+                </div>
+                <div class="viz-chart">
+                    <canvas id="averageChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" style="display:none">
+            <!-- (kept for future extensibility, but hidden) -->
+        </div>
+
+        <div id="myGrid" class="ag-theme-alpine"></div>
+    </div>
+
+    <button class="customize-columns-btn" id="customizeColumnsBtn" aria-label="Customize columns">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+        </svg>
+    </button>
+    <div class="column-panel-overlay" id="columnPanelOverlay"></div>
+    <div class="column-panel" id="columnPanel">
+        <div class="column-panel-header">
+            <span class="column-panel-title">Customize columns</span>
+            <span class="column-panel-hidden-count" id="hiddenCount"></span>
+            <button class="column-panel-close" onclick="closeColumnPanel()">&times;</button>
+        </div>
+        <div class="column-panel-search-container">
+            <input type="text" id="columnPanelSearch" class="column-panel-search" placeholder="Search columns...">
+        </div>
+        <div class="column-panel-list" id="columnPanelList">
+            <!-- Columns will be rendered here -->
+        </div>
+        <div class="column-panel-footer">
+            <button class="column-panel-done" onclick="closeColumnPanel()">Done</button>
+        </div>
+    </div>
+
+    <!-- AG Grid JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.1/dist/ag-grid-community.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-enterprise@31.0.1/dist/ag-grid-enterprise.min.js"></script>
+    
+    <script>
+    // Add global variable for grid API
+    let gridApi;
+
+    $(document).ready(function() {
+        console.log('Initializing daterangepicker...');
+        function cb(start, end, label) {
+            const text = start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD');
+            $('#dateRangeText').text(text);
+            // Store for filter
+            $('#dateRangeBtn').data('start', start.format('YYYY-MM-DD'));
+            $('#dateRangeBtn').data('end', end.format('YYYY-MM-DD'));
+        }
+        const ranges = {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        };
+        $('#dateRangeBtn').daterangepicker({
+            opens: 'left',
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear',
+                applyLabel: 'Apply',
+                format: 'YYYY-MM-DD'
+            },
+            ranges: ranges
+        }, cb);
+        $('#dateRangeBtn').on('apply.daterangepicker', function(ev, picker) {
+            cb(picker.startDate, picker.endDate);
+            updateDateFilter();
+        });
+        $('#dateRangeBtn').on('cancel.daterangepicker', function(ev, picker) {
+            $('#dateRangeText').text('Date Range');
+            $(this).removeData('start').removeData('end');
+            updateDateFilter();
+        });
+        console.log('Daterangepicker initialized.');
+    });
+
+    console.log('Script started');
+
+    // Sample column definitions
+    const columnDefs = [
+        {
+            field: 'expand',
+            headerName: '',
+            width: 50,
+            cellRenderer: 'agGroupCellRenderer',
+            cellRendererParams: {
+                suppressCount: true,
+                innerRenderer: () => ''
+            }
+        },
+        { field: 'transactionId', headerName: 'Transaction ID', sortable: true, filter: true, width: 150 },
+        { field: 'date', headerName: 'Date', sortable: true, filter: 'agDateColumnFilter', filterParams: {
+            comparator: function(filterLocalDateAtMidnight, cellValue) {
+                const dateAsString = cellValue;
+                const dateParts = dateAsString.split('-');
+                const cellDate = new Date(
+                    Number(dateParts[0]),
+                    Number(dateParts[1]) - 1,
+                    Number(dateParts[2])
+                );
+                if (filterLocalDateAtMidnight.getTime() === cellDate.getTime()) {
+                    return 0;
+                }
+                if (cellDate < filterLocalDateAtMidnight) {
+                    return -1;
+                }
+                if (cellDate > filterLocalDateAtMidnight) {
+                    return 1;
+                }
+            }
+        }, width: 120 },
+        { field: 'description', headerName: 'Description', sortable: true, filter: true, width: 200 },
+        { field: 'amount', headerName: 'Amount', sortable: true, filter: true, width: 120, 
+          valueFormatter: params => {
+              return new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD'
+              }).format(params.value);
+          },
+          cellStyle: params => {
+              return params.value < 0 ? { color: '#e74c3c' } : { color: '#27ae60' };
+          }
+        },
+        { field: 'category', headerName: 'Category', sortable: true, filter: true, width: 150 },
+        { field: 'account', headerName: 'Account', sortable: true, filter: true, width: 150 },
+        { field: 'status', headerName: 'Status', sortable: true, filter: true, width: 120 },
+        { field: 'type', headerName: 'Type', sortable: true, filter: true, width: 120 },
+        { field: 'merchant', headerName: 'Merchant', sortable: true, filter: true, width: 150 },
+        { field: 'location', headerName: 'Location', sortable: true, filter: true, width: 150 },
+        { field: 'paymentMethod', headerName: 'Payment Method', sortable: true, filter: true, width: 150 },
+        { field: 'tags', headerName: 'Tags', sortable: true, filter: true, width: 150 },
+        { field: 'notes', headerName: 'Notes', sortable: true, filter: true, width: 200 },
+        { field: 'recurring', headerName: 'Recurring', sortable: true, filter: true, width: 120 },
+        { field: 'budgetCategory', headerName: 'Budget Category', sortable: true, filter: true, width: 150 },
+        { field: 'taxDeductible', headerName: 'Tax Deductible', sortable: true, filter: true, width: 150 },
+        { field: 'currency', headerName: 'Currency', sortable: true, filter: true, width: 120 },
+        { field: 'exchangeRate', headerName: 'Exchange Rate', sortable: true, filter: true, width: 150 },
+        { field: 'referenceNumber', headerName: 'Reference Number', sortable: true, filter: true, width: 150 },
+        { field: 'lastModified', headerName: 'Last Modified', sortable: true, filter: 'agDateColumnFilter', width: 150 }
+    ];
+
+    // Set first 10 columns visible, the rest hidden by default
+    columnDefs.forEach((col, idx) => {
+        col.hide = idx >= 10;
+    });
+
+    // Generate sample data
+    function generateSampleData(count) {
+        console.log('Generating sample data...');
+        const data = [];
+        const categories = ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Bills', 'Income', 'Transfer', 'Healthcare', 'Education', 'Travel'];
+        const accounts = ['Checking', 'Savings', 'Credit Card', 'Investment', 'Mortgage', 'Loan'];
+        const statuses = ['Completed', 'Pending', 'Failed', 'Refunded', 'Disputed'];
+        const types = ['Debit', 'Credit', 'Transfer', 'Payment', 'Deposit', 'Withdrawal'];
+        const merchants = ['Whole Foods', 'Amazon', 'Netflix', 'Uber', 'Starbucks', 'Target', 'Walmart', 'Employer', 'Airbnb', 'Spotify', 'Apple', 'Google'];
+        const locations = ['New York', 'Los Angeles', 'Chicago', 'Online', 'San Francisco', 'Boston', 'Miami', 'Seattle', 'Austin', 'Denver'];
+        const paymentMethods = ['Credit Card', 'Debit Card', 'Bank Transfer', 'PayPal', 'Venmo', 'Cash', 'Check'];
+        const tags = ['Business', 'Personal', 'Family', 'Travel', 'Home', 'Work', 'Education', 'Healthcare'];
+        const budgetCategories = ['Essential', 'Non-Essential', 'Savings', 'Investment', 'Debt Payment', 'Entertainment'];
+        const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD'];
+        const recurringOptions = ['Yes', 'No', 'Monthly', 'Weekly', 'Yearly'];
+
+        const lifecycleStates = ['Authorization', 'Accepted', 'Declined', 'Sale', 'Refund'];
+        const lifecycleStatuses = ['Pending', 'Completed', 'Failed'];
+
+        for (let i = 0; i < count; i++) {
+            const amount = (Math.random() * 2000 - 500).toFixed(2);
+            const date = new Date();
+            date.setDate(date.getDate() - Math.floor(Math.random() * 30));
+            const lastModified = new Date(date);
+            lastModified.setHours(lastModified.getHours() + Math.floor(Math.random() * 24));
+            
+            // Generate random number of lifecycle events (2-5)
+            const numEvents = Math.floor(Math.random() * 4) + 2;
+            const lifecycleEvents = [];
+            let currentDate = new Date(date);
+            
+            for (let j = 0; j < numEvents; j++) {
+                const state = lifecycleStates[Math.floor(Math.random() * lifecycleStates.length)];
+                const status = lifecycleStatuses[Math.floor(Math.random() * lifecycleStatuses.length)];
+                currentDate = new Date(currentDate.getTime() + Math.random() * 3600000); // Add random time within an hour
+                
+                lifecycleEvents.push({
+                    timestamp: currentDate.toISOString(),
+                    state: state,
+                    status: status,
+                    amount: state === 'Refund' ? -parseFloat(amount) : parseFloat(amount),
+                    notes: `${state} ${status.toLowerCase()}`
+                });
+            }
+            
+            const transaction = {
+                transactionId: `TXN${String(i + 1).padStart(4, '0')}`,
+                date: date.toISOString().split('T')[0],
+                description: `${merchants[Math.floor(Math.random() * merchants.length)]} Transaction`,
+                amount: parseFloat(amount),
+                category: categories[Math.floor(Math.random() * categories.length)],
+                account: accounts[Math.floor(Math.random() * accounts.length)],
+                status: statuses[Math.floor(Math.random() * statuses.length)],
+                type: types[Math.floor(Math.random() * types.length)],
+                merchant: merchants[Math.floor(Math.random() * merchants.length)],
+                location: locations[Math.floor(Math.random() * locations.length)],
+                paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+                tags: tags[Math.floor(Math.random() * tags.length)],
+                notes: `Transaction note ${i + 1}`,
+                recurring: recurringOptions[Math.floor(Math.random() * recurringOptions.length)],
+                budgetCategory: budgetCategories[Math.floor(Math.random() * budgetCategories.length)],
+                taxDeductible: Math.random() > 0.7 ? 'Yes' : 'No',
+                currency: currencies[Math.floor(Math.random() * currencies.length)],
+                exchangeRate: (Math.random() * 2).toFixed(4),
+                referenceNumber: `REF${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
+                lastModified: lastModified.toISOString(),
+                lifecycleEvents: lifecycleEvents
+            };
+            
+            console.log('Generated transaction with lifecycle events:', transaction);
+            data.push(transaction);
+        }
+        return data;
+    }
+
+    // Generate 200 sample transactions (doubled from original)
+    const rowData = generateSampleData(200);
+
+    // Grid options
+    const gridOptions = {
+        columnDefs: columnDefs,
+        rowData: rowData,
+        defaultColDef: {
+            flex: 1,
+            minWidth: 100,
+            resizable: true,
+            filter: true,
+            floatingFilter: true,
+        },
+        masterDetail: true,
+        detailCellRenderer: params => {
+            const data = params.data;
+            if (!data || !data.lifecycleEvents) {
+                return 'No lifecycle data available';
+            }
+
+            return `
+                <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; margin: 10px;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 16px; color: #1a1a1a;">Transaction Lifecycle</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        ${data.lifecycleEvents.map(event => {
+                            const timestamp = new Date(event.timestamp);
+                            const timeStr = timestamp.toLocaleString();
+                            const statusColor = event.status === 'Completed' ? '#27ae60' : 
+                                              event.status === 'Failed' ? '#e74c3c' : '#f39c12';
+                            const amountColor = event.amount < 0 ? '#e74c3c' : '#27ae60';
+                            
+                            return `
+                                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background-color: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${statusColor};"></div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 500; color: #1a1a1a;">${event.state}</div>
+                                        <div style="font-size: 12px; color: #666;">${timeStr}</div>
+                                    </div>
+                                    <div style="font-weight: 500; color: ${amountColor}">
+                                        ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(event.amount)}
+                                    </div>
+                                    <div style="font-size: 12px; color: #666;">${event.notes}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        },
+        detailRowHeight: 200,
+        enableRangeSelection: true,
+        rowSelection: 'multiple',
+        suppressRowClickSelection: true,
+        pagination: true,
+        paginationPageSize: 25,
+        paginationPageSizeSelector: [10, 25, 50, 100],
+        domLayout: 'autoHeight',
+        animateRows: true,
+        enableCellTextSelection: true,
+        suppressMovableColumns: false,
+        onGridReady: params => {
+            console.log('Grid ready');
+            params.api.sizeColumnsToFit();
+            updateStats(params.api);
+        },
+        onFilterChanged: params => {
+            console.log('Filter changed');
+            updateStats(params.api);
+        },
+        onSortChanged: params => {
+            updateStats(params.api);
+        }
+    };
+
+    // Initialize the grid
+    // AI Modal functionality
+    function openAiModal() {
+        document.getElementById('aiModal').style.display = 'block';
+        document.getElementById('aiModalOverlay').style.display = 'block';
+    }
+
+    function closeAiModal() {
+        document.getElementById('aiModal').style.display = 'none';
+        document.getElementById('aiModalOverlay').style.display = 'none';
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAiModal();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AI Modal handlers
+        document.getElementById('aiInsightsBtn').addEventListener('click', openAiModal);
+        document.getElementById('aiModalClose').addEventListener('click', closeAiModal);
+        document.getElementById('aiModalOverlay').addEventListener('click', closeAiModal);
+
+        console.log('DOM loaded');
+        const gridDiv = document.querySelector('#myGrid');
+        if (!gridDiv) {
+            console.error('Grid div not found!');
+            return;
+        }
+        console.log('Creating grid...');
+        gridApi = agGrid.createGrid(gridDiv, gridOptions);
+        updateVizCharts();
+
+        let columnPanelOrder = [];
+        let draggingIndex = null;
+
+        function openColumnPanel() {
+            columnPanelOrder = columnDefs.map((col, i) => i);
+            document.getElementById('columnPanel').classList.add('open');
+            document.getElementById('columnPanelOverlay').style.display = 'block';
+            renderColumnPanelList();
+            updateHiddenCount();
+        }
+        function closeColumnPanel() {
+            document.getElementById('columnPanel').classList.remove('open');
+            document.getElementById('columnPanelOverlay').style.display = 'none';
+        }
+        document.getElementById('customizeColumnsBtn').addEventListener('click', openColumnPanel);
+        document.getElementById('columnPanelOverlay').onclick = closeColumnPanel;
+        document.getElementById('columnPanelSearch').addEventListener('input', renderColumnPanelList);
+        document.querySelector('.column-panel-close').addEventListener('click', closeColumnPanel);
+        document.querySelector('.column-panel-done').addEventListener('click', closeColumnPanel);
+
+        function renderColumnPanelList() {
+            const list = document.getElementById('columnPanelList');
+            const search = document.getElementById('columnPanelSearch').value.toLowerCase();
+            list.innerHTML = '';
+            columnPanelOrder.forEach((colIdx, i) => {
+                const col = columnDefs[colIdx];
+                if (!col.headerName.toLowerCase().includes(search)) return;
+                const item = document.createElement('div');
+                item.className = 'column-panel-item';
+                item.draggable = true;
+                item.dataset.idx = i;
+                // Drag handle
+                const drag = document.createElement('span');
+                drag.className = 'column-panel-drag';
+                drag.innerHTML = '&#9776;';
+                item.appendChild(drag);
+                // Checkbox
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'column-panel-checkbox';
+                checkbox.checked = !col.hide;
+                checkbox.onchange = function() {
+                    col.hide = !this.checked;
+                    gridApi.setColumnDefs(columnDefs);
+                    updateHiddenCount();
+                };
+                item.appendChild(checkbox);
+                // Label
+                const label = document.createElement('span');
+                label.className = 'column-panel-label';
+                label.textContent = col.headerName;
+                item.appendChild(label);
+                // Drag events
+                item.ondragstart = function(e) {
+                    draggingIndex = i;
+                    item.classList.add('dragging');
+                };
+                item.ondragend = function(e) {
+                    draggingIndex = null;
+                    item.classList.remove('dragging');
+                };
+                item.ondragover = function(e) {
+                    e.preventDefault();
+                    if (draggingIndex === null || draggingIndex === i) return;
+                    const temp = columnPanelOrder[draggingIndex];
+                    columnPanelOrder.splice(draggingIndex, 1);
+                    columnPanelOrder.splice(i, 0, temp);
+                    draggingIndex = i;
+                    renderColumnPanelList();
+                    gridApi.setColumnDefs(columnPanelOrder.map(idx => columnDefs[idx]));
+                };
+                list.appendChild(item);
+            });
+        }
+        function updateHiddenCount() {
+            const hidden = columnDefs.filter(col => col.hide).length;
+            document.getElementById('hiddenCount').textContent = hidden > 0 ? `${hidden} hidden columns` : '';
+        }
+
+        // Global search functionality
+        document.getElementById('globalSearch').addEventListener('input', function(e) {
+            gridApi.setQuickFilter(e.target.value);
+            updateStats(gridApi);
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            gridApi.sizeColumnsToFit();
+        });
+    });
+
+    // Update statistics
+    function updateStats(api) {
+        console.log('Updating stats...');
+        const visibleRows = [];
+        api.forEachNodeAfterFilterAndSort(node => {
+            visibleRows.push(node.data);
+        });
+
+        const totalTransactions = visibleRows.length;
+        const totalAmount = visibleRows.reduce((sum, row) => sum + row.amount, 0);
+        const averageAmount = totalTransactions > 0 ? totalAmount / totalTransactions : 0;
+
+        document.getElementById('totalTransactions').textContent = totalTransactions;
+        document.getElementById('totalAmount').textContent = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(totalAmount);
+        document.getElementById('averageAmount').textContent = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(averageAmount);
+
+        // Add color coding for total amount
+        const totalAmountElement = document.getElementById('totalAmount');
+        totalAmountElement.className = 'stat-value ' + (totalAmount >= 0 ? 'positive' : 'negative');
+    }
+
+    // Column selector functionality
+    const columnSelector = document.getElementById('columnSelector');
+    columnDefs.forEach(col => {
+        const option = document.createElement('option');
+        option.value = col.field;
+        option.text = col.headerName;
+        option.selected = true;
+        columnSelector.appendChild(option);
+    });
+
+    columnSelector.addEventListener('change', function(e) {
+        const selectedColumns = Array.from(e.target.selectedOptions).map(option => option.value);
+        const columnsToShow = columnDefs.filter(col => selectedColumns.includes(col.field));
+        gridOptions.api.setColumnDefs(columnsToShow);
+    });
+
+    // Export to CSV functionality
+    function exportToCsv() {
+        gridApi.exportDataAsCsv({
+            fileName: 'transactions.csv',
+            processCellCallback: function(params) {
+                if (params.column.getColId() === 'amount') {
+                    return params.value.toFixed(2);
+                }
+                return params.value;
+            }
+        });
+    }
+
+    // Add column menu functionality
+    function toggleColumnDropdown() {
+        const dropdown = document.getElementById('columnDropdown');
+        dropdown.classList.toggle('active');
+        if (dropdown.classList.contains('active')) {
+            renderColumnDropdownList();
+        }
+    }
+
+    function renderColumnDropdownList() {
+        const list = document.getElementById('columnDropdownList');
+        const searchValue = document.getElementById('columnSearchInput').value.toLowerCase();
+        list.innerHTML = '';
+        let visibleCount = 0;
+        columnDefs.forEach(col => {
+            if (col.headerName.toLowerCase().includes(searchValue)) {
+                visibleCount++;
+                const div = document.createElement('div');
+                div.className = 'column-item';
+                const toggle = document.createElement('label');
+                toggle.className = 'column-toggle';
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.checked = !col.hide;
+                input.addEventListener('change', function() {
+                    col.hide = !this.checked;
+                    gridOptions.api.setColumnDefs(columnDefs);
+                });
+                const slider = document.createElement('span');
+                slider.className = 'slider';
+                toggle.appendChild(input);
+                toggle.appendChild(slider);
+                const label = document.createElement('span');
+                label.className = 'column-label';
+                label.textContent = col.headerName;
+                div.appendChild(toggle);
+                div.appendChild(label);
+                list.appendChild(div);
+            }
+        });
+        // If no columns match search
+        if (visibleCount === 0) {
+            const empty = document.createElement('div');
+            empty.textContent = 'No columns found.';
+            empty.style.color = '#aaa';
+            empty.style.padding = '12px 0';
+            list.appendChild(empty);
+        }
+    }
+
+    document.getElementById('columnSearchInput').addEventListener('input', renderColumnDropdownList);
+
+    function toggleSelectAllColumns() {
+        const btn = document.getElementById('selectAllBtn');
+        const allVisible = columnDefs.every(col => !col.hide);
+        columnDefs.forEach(col => { col.hide = allVisible; });
+        gridOptions.api.setColumnDefs(columnDefs);
+        renderColumnDropdownList();
+        btn.textContent = allVisible ? 'Select All' : 'Hide All';
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('mousedown', function(e) {
+        const dropdown = document.getElementById('columnDropdown');
+        const toggleBtn = document.getElementById('columnMenuToggleBtn');
+        if (!dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+
+    // Replace initializeVizCharts with updateVizCharts
+    function updateVizCharts() {
+        // Get the current date filter
+        const start = $('#dateRangeBtn').data('start');
+        const end = $('#dateRangeBtn').data('end');
+        let filteredRows = rowData;
+        if (start && end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            filteredRows = rowData.filter(row => {
+                const rowDate = new Date(row.date);
+                return rowDate >= startDate && rowDate <= endDate;
+            });
+        }
+
+        // Update the period text in all viz widgets
+        const periodText = start && end ? 
+            `${start} to ${end}` : 
+            'Last 30 days';
+        document.querySelectorAll('.viz-period').forEach(el => {
+            el.textContent = periodText;
+        });
+
+        // Aggregate by date
+        const dateMap = {};
+        filteredRows.forEach(row => {
+            if (!dateMap[row.date]) {
+                dateMap[row.date] = { count: 0, total: 0 };
+            }
+            dateMap[row.date].count++;
+            dateMap[row.date].total += row.amount;
+        });
+        // Sort dates ascending
+        const sortedDates = Object.keys(dateMap).sort();
+        const transactions = sortedDates.map(date => dateMap[date].count);
+        const amounts = sortedDates.map(date => dateMap[date].total);
+        const averages = sortedDates.map((date, i) => dateMap[date].total / dateMap[date].count);
+
+        // If no data, fill with zeros for the selected range
+        if (sortedDates.length === 0 && start && end) {
+            let d = new Date(start);
+            const endDate = new Date(end);
+            while (d <= endDate) {
+                sortedDates.push(d.toISOString().split('T')[0]);
+                transactions.push(0);
+                amounts.push(0);
+                averages.push(0);
+                d.setDate(d.getDate() + 1);
+            }
+        }
+
+        // Update or create charts
+        if (window.transactionsChartObj) window.transactionsChartObj.destroy();
+        if (window.amountsChartObj) window.amountsChartObj.destroy();
+        if (window.averageChartObj) window.averageChartObj.destroy();
+
+        const chartConfig = {
+            type: 'line',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 8,
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12 },
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: { display: false },
+                        ticks: { 
+                            maxRotation: 0,
+                            font: { size: 10 }
+                        }
+                    },
+                    y: {
+                        display: true,
+                        grid: { 
+                            color: 'rgba(0,0,0,0.05)',
+                            drawBorder: false
+                        },
+                        ticks: { 
+                            font: { size: 10 },
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    point: { 
+                        radius: 2,
+                        hoverRadius: 4
+                    },
+                    line: { 
+                        tension: 0.4,
+                        borderWidth: 2
+                    }
+                }
+            }
+        };
+
+        window.transactionsChartObj = new Chart(document.getElementById('transactionsChart'), {
+            ...chartConfig,
+            data: {
+                labels: sortedDates,
+                datasets: [{
+                    data: transactions,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    fill: true
+                }]
+            }
+        });
+
+        window.amountsChartObj = new Chart(document.getElementById('amountsChart'), {
+            ...chartConfig,
+            data: {
+                labels: sortedDates,
+                datasets: [{
+                    data: amounts,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    fill: true
+                }]
+            },
+            options: {
+                ...chartConfig.options,
+                scales: {
+                    ...chartConfig.options.scales,
+                    y: {
+                        ...chartConfig.options.scales.y,
+                        ticks: {
+                            ...chartConfig.options.scales.y.ticks,
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        window.averageChartObj = new Chart(document.getElementById('averageChart'), {
+            ...chartConfig,
+            data: {
+                labels: sortedDates,
+                datasets: [{
+                    data: averages,
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    fill: true
+                }]
+            },
+            options: {
+                ...chartConfig.options,
+                scales: {
+                    ...chartConfig.options.scales,
+                    y: {
+                        ...chartConfig.options.scales.y,
+                        ticks: {
+                            ...chartConfig.options.scales.y.ticks,
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateDateFilter() {
+        const start = $('#dateRangeBtn').data('start');
+        const end = $('#dateRangeBtn').data('end');
+        if (start && end) {
+            const dateFilter = {
+                date: {
+                    filterType: 'dateRange',
+                    dateFrom: start,
+                    dateTo: end,
+                    type: 'inRange'
+                }
+            };
+            gridApi.setFilterModel(dateFilter);
+            gridApi.onFilterChanged();
+            console.log('Date filter applied:', dateFilter);
+        } else {
+            gridApi.setFilterModel(null);
+            gridApi.onFilterChanged();
+            console.log('Date filter cleared');
+        }
+        updateStats(gridApi);
+        updateVizCharts();
+    }
+    </script>
+</body>
+</html> 
